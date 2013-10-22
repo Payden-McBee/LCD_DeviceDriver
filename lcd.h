@@ -22,7 +22,7 @@ void LCDCLR();
 //let's get required working first
 
 void cursorToLineTwo();
-
+//add a comment
 void cursorToLineOne();
 
 void writeChar(char asciiChar);
