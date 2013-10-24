@@ -10,8 +10,8 @@
 /*
  * main.c
  */
- char * firstMessage="ECE382 is my favorite class!#";
- char * secondMessage="Required Funcitonality#";
+ char firstMessage[]="ECE382 is my favorite class! ";
+ char secondMessage[]="Required Funcitonality ";
 void main(void) {
     WDTCTL = WDTPW | WDTHOLD;	// Stop watchdog timer
     INITSPI();

@@ -257,7 +257,7 @@ void cursorToLineTwo(){
 void cursorToLineOne(){
 	                 LCDCON=GIVE_COMMAND;   //set 0 to RS, give command
 		             LCDDELAY1();
-		             LCDSEND=0x40;///////////////////////changed
+		             LCDSEND=0x80;///////////////////////changed
 				     LCDWRT8(LCDSEND);
 				     LCDDELAY1();
 					 LCDCON=FIRST_SPACE_LCD;
@@ -271,28 +271,46 @@ void writeChar(char asciiChar){
     LCDDELAY1();
 }
 
-void writeString(char * string){
-	char letter;
-    if(*string!=NUM_SIGN)
-    {
-       letter=*string;
-       writeChar(letter);
-       string++;
-       writeString(string);
-    }
-
+void writeString(char string[]){
+	int i=0;
+	for (i = 0; i < 8; i++){
+		writeChar(string[i]);
+	}
 }
 
-void scrollString(char * string1, char * string2){
-	cursorToLineOne();
-	writeString(string1);
-	cursorToLineTwo();
-	writeString(string2);
-	longdelay();
-	LCDCLR();
-	longdelay();
-	string1++;
-	scrollString(string1,string2);
+void scrollString(char string1[], char string2[]){
+	while (1){
+		cursorToLineOne();
+		rotateString(string1);
+		writeString(string1);
+		cursorToLineTwo();
+		rotateString(string2);
+		writeString(string2);
+		longdelay();
+		LCDCLR();
+	}
+
+	//scrollString(string1,string2);
+}
+void rotateString(char string[]){
+		int i=0;
+		int j=0;
+		//int arrayLength=28;
+		int arrayLength=0;
+		while(string[j]!=0)
+		{
+			arrayLength++;
+			j++;
+		}
+		char firstVal=string[i];
+		for(i=0;i<arrayLength;i++)
+		{
+			string[i]=string[i+1];
+		}
+
+		string[arrayLength-1] = firstVal;
+		//now print string
+
 }
 void longdelay(){
 	int j;

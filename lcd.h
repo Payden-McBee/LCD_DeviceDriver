@@ -29,6 +29,7 @@ void LCDDELAY2();
 void LCDWRT8(char byteToSend);
 void LCDWRT4(char LCDDATA);
 void longdelay();
+void rotateString(char string[]);
 
 // void INITBUTTONS();
 //void determineMsg();
@@ -41,9 +42,9 @@ void cursorToLineOne();
 
 void writeChar(char asciiChar);
 
-void writeString(char * string);
+void writeString(char string[]);
 
-void scrollString(char * string1, char * string2);
+void scrollString(char string1[], char string2[]);
 
 // Here are some helper functions from my LCD.c
 // I don't expose these in my header, but may be helpful to you.
