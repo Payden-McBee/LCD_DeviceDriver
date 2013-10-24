@@ -109,9 +109,149 @@ void SET_SS_LO(){
 }
 
 
+/*---------------------------------------------------
+;Subroutine Name: LCDDELAY1
+;Author: C2C Payden McBee, USAF
+;Function: Implements a 40.5 microsecond delay
+;Inputs:delay1, a constant number to iterate the loop
+;Outputs: none
+;Registers destroyed: none
+;Subroutines used:none
+;---------------------------------------------------*/
+void LCDDELAY1(){
+
+                  ; your 40.5 microsecond delay
+                  push r5
+                  mov.w #delay1, r5	//nine is used to make the delay iterate 27 times
+                  nop
+delay			  dec r5
+				  jnz delay
+				  pop r5
+}
+
+
+/*;---------------------------------------------------
+;Subroutine Name: LCDDELAY1
+;Author: C2C Payden McBee, USAF
+;Function: Implements a 1.65 millisecond delay
+;Inputs:delay1, a constant number to iterate the loop
+;Outputs: none
+;Registers destroyed: none
+;Subroutines used:none
+;---------------------------------------------------*/
+void LCDDELAY2(){
+
+                 // your 1.65 millisecond delay code goes here
+ 				  push r5
+                  mov.w #delay2, r5	;hex 23F is used to make the delay iterate 575 decimal times
+                  nop
+delay2			  dec r5
+				  jnz delay
+				  pop r5
+}
+
+/*---------------------------------------------------
+; Subroutine Name: LCDCLR
+; Author: Capt Todd Branchflower, USAF
+; Function: Clears LCD, sets cursor to home
+; Inputs: none
+; Outputs: none
+; Registers destroyed: none
+; Subroutines used: LCDWRT8, LCDDELAY1, LCDDELAY2
+;---------------------------------------------------*/
 void LCDCLR(){
+                  mov.b   #0, &LCDCON                                            // clear RS
+                  mov.b   #1, &LCDSEND                                           // send clear
+                  call    #LCDWRT8
+                  call    #LCDDELAY1
+                  mov.b   #0x40, &LCDCON                                         // set RS
+                  call    #LCDDELAY2
+}
+
+/*---------------------------------------------------
+; Subroutine Name: LCDWRT8
+; Author: C2C Payden McBee
+; Function: Send full byte to LCD
+; Inputs: LCDSEND
+; Outputs: none
+; Registers destroyed: none
+; Subroutines used: LCDWRT4
+; Documentation: The code was created by
+;  Capt Branchflower in assembly, I converted it to C.
+;---------------------------------------------------*/
+void LCDWRT8(){
+                  push.w  r5
+
+                  mov.b   &LCDSEND, r5                                          // load full byte
+                  and.b   #0xf0, r5                                             // shift in four zeros on the left
+                  rrc.b   r5
+                  rrc.b   r5
+                  rrc.b   r5
+                  rrc.b   r5
+                  mov.b   r5, &LCDDATA                                          // store send data
+                  call    #LCDWRT4                                              // write upper nibble
+                  mov.b   &LCDSEND, r5                                          // load full byte
+                  and.b   #0x0f, r5                                             // clear upper nibble
+                  mov.b   r5, &LCDDATA
+                  call    #LCDWRT4                                              //write lower nibble
+
+                  pop.w   r5
 
 }
+/*---------------------------------------------------
+; Subroutine Name: LCDWRT4
+; Author: C2C Payden McBee
+; Function: Send 4 bits of data to LCD via SPI.
+; sets upper four bits to match LCDCON.
+; Inputs: LCDCON, LCDDATA
+; Outputs: none
+; Registers destroyed: none
+; Subroutines used: LCDDELAY1
+; Documentation: The code was created by
+;  Capt Branchflower in assembly, I converted it to C.
+;---------------------------------------------------*/
+void LCDWRT4(){
+
+                  int holdLCDDATA;
+                  holdLCDDATA=LCDDATA;					 //load data to send
+                  holdLCDDATA&=0x0f;                     //ensure upper half of byte is clear
+                  holdLCDDATA|=LCDCON;                   //set LCD control nibble
+                  holdLCDDATA&=0x7f;        			 //set E low
+                  SPISEND
+                  call    #LCDDELAY1
+                  bis.b   #0x80, r5                                             //set E high
+                  call    #SPISEND
+                  call    #LCDDELAY1
+                  and.b   #0x7f, r5                                              //set E low
+                  call    #SPISEND
+                  call    #LCDDELAY1
+
+}
+
+/*---------------------------------------------------
+; Subroutine Name: SPISEND
+; Author: C2C Payden McBee
+; Function: Sends contents of r5 to SPI.
+; Waits for Rx flag, clears by reading.
+; Sets slave select accordingly.
+; Outputs: none
+; Registers destroyed: none
+; Subroutines used: LCDWRT8, LCDDELAY1, LCDDELAY2
+; Documentation: The code was created by
+;  Capt Branchflower in assembly, I converted it to C.
+;---------------------------------------------------*/
+
+void SPISEND(){
+                  push    r4
+                  call    #SET_SS_LO
+                  mov.b   r5, &UCB0TXBUF                                         //transfer byte
+wait:
+                  bit.b   #UCB0RXIFG, &IFG2                                      //wait for transfer completion
+                  jz      wait
+                  mov.b   &UCB0RXBUF, r4                                         //read value to clear flag
+                  call    #SET_SS_HI
+                  pop     r4
+                  }
 
 // void INITBUTTONS();
 //void determineMsg();
