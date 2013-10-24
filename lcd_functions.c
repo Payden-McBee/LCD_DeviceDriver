@@ -37,8 +37,78 @@ void INITSPI(){
 
 }
 void LCDINIT(){
+	  	  	  	  	  SET_SS_HI();
+
+	                  LCDCON=0;                                        // initialize control bits
+
+	                  LCDDATA=3;                                       // function set
+	                  LCDWRT4();
+	                  LCDDELAY2();
+
+	                  LCDDATA=3;                        //function set
+	                  LCDWRT4();
+	                  LCDDELAY1();
+
+	                  LCDDATA=3;                         // function set
+	                  LCDWRT4();
+	                  LCDDELAY1();
+
+	                  LCDDATA=2;                        //set 4-bit interface
+	                  LCDWRT4();
+	                  LCDDELAY1();
+
+	                  LCDSEND=0x28;                    // 2 lines, 5x7
+	                  LCDWRT8();
+	                  LCDDELAY2();
+
+	                  LCDSEND=0x0C;                   // display on, cursor, blink off
+	                  LCDWRT8();
+	                  LCDDELAY2();
+
+	                  LCDSEND=1;             //clear, cursor home
+	                  LCDWRT8();
+	                  LCDDELAY1();
+
+	                  LCDSEND=6;                      //cursor increment, shift off
+	                  LCDWRT8();
+	                  LCDDELAY2();
+
+	                  LCDSEND=1;            //clear, cursor home
+	                  LCDWRT8();
+	                  LCDDELAY2();
+
+	                  LCDSEND=2;                   //cursor home
+	                  LCDWRT8();
+	                  LCDDELAY2();
+
+	                  mov.b   #0, r5                              //clear register
+	                  SPISEND();
+	                  LCDDELAY1();
+}
+void SET_SS_HI(){
+
+              //your set SS high code goes here
+
+				P1OUT|=BIT3;
 
 }
+
+/*Subroutine Name: SET_SS_LO
+;Author: C2C Payden McBee, USAF
+;Function:  Sets your slave select to low (enabled)
+;Inputs:none
+;Outputs: none
+;Registers destroyed: none
+;Subroutines used:none
+*/
+void SET_SS_LO(){
+
+                  //your set SS low code goes here
+				P1OUT&=~BIT3;
+
+}
+
+
 void LCDCLR(){
 
 }
