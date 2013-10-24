@@ -36,55 +36,54 @@ void INITSPI(){
 	      			    P1DIR|= BIT3;
 
 }
+
+/*---------------------------------------------------
+; Function Name: LCDINIT
+; Author: Capt Todd Branchflower, USAF
+; Function: Initializes the LCD on the Geek Box
+; Inputs: none
+; Outputs: none
+; Registers destroyed: none
+; Functions used: LCDWRT4, LCDWRT8, LCDDELAY1, LCDDELAY2
+;---------------------------------------------------*/
 void LCDINIT(){
 	  	  	  	  	  SET_SS_HI();
 
 	                  LCDCON=0;                                        // initialize control bits
 
-	                  LCDDATA=3;                                       // function set
-	                  LCDWRT4();
-	                  LCDDELAY2();
+	                  writeCommandNibble(0x03);	 // function set
 
-	                  LCDDATA=3;                        //function set
-	                  LCDWRT4();
-	                  LCDDELAY1();
+	                  writeCommandNibble(0x03);	//function set
 
-	                  LCDDATA=3;                         // function set
-	                  LCDWRT4();
-	                  LCDDELAY1();
+	                  writeCommandNibble(0x03);	 // function set
 
-	                  LCDDATA=2;                        //set 4-bit interface
-	                  LCDWRT4();
-	                  LCDDELAY1();
+	                  writeCommandNibble(0x02);	 //set 4-bit interface
 
-	                  LCDSEND=0x28;                    // 2 lines, 5x7
-	                  LCDWRT8();
-	                  LCDDELAY2();
+	                  writeCommandByte(0x28);	 // 2 lines, 5x7
 
-	                  LCDSEND=0x0C;                   // display on, cursor, blink off
-	                  LCDWRT8();
-	                  LCDDELAY2();
+	                  writeCommandByte(0x0C);	 // display on, cursor, blink off
 
-	                  LCDSEND=1;             //clear, cursor home
-	                  LCDWRT8();
-	                  LCDDELAY1();
+	                  writeCommandByte(0x01);	 //clear, cursor home
 
-	                  LCDSEND=6;                      //cursor increment, shift off
-	                  LCDWRT8();
-	                  LCDDELAY2();
+	                  writeCommandByte(0x06);	 //cursor increment, shift off
 
-	                  LCDSEND=1;            //clear, cursor home
-	                  LCDWRT8();
-	                  LCDDELAY2();
+	                  writeCommandByte(0x01);	 //clear, cursor home
 
-	                  LCDSEND=2;                   //cursor home
-	                  LCDWRT8();
-	                  LCDDELAY2();
+	                  writeCommandByte(0x02);	//cursor home
 
-	                  mov.b   #0, r5                              //clear register
-	                  SPISEND();
+	                  SPISEND(0);
 	                  LCDDELAY1();
 }
+
+/*---------------------------------------------------
+;Function Name: SET_SS_HI
+;Author: C2C Payden McBee, USAF
+;Function:  Sets your slave select to high (disabled)
+;Inputs:none
+;Outputs: none
+;Registers destroyed: none
+;Functions used:none
+;---------------------------------------------------*/
 void SET_SS_HI(){
 
               //your set SS high code goes here
@@ -93,13 +92,13 @@ void SET_SS_HI(){
 
 }
 
-/*Subroutine Name: SET_SS_LO
+/*Function Name: SET_SS_LO
 ;Author: C2C Payden McBee, USAF
 ;Function:  Sets your slave select to low (enabled)
 ;Inputs:none
 ;Outputs: none
 ;Registers destroyed: none
-;Subroutines used:none
+;Functions used:none
 */
 void SET_SS_LO(){
 
@@ -110,103 +109,86 @@ void SET_SS_LO(){
 
 
 /*---------------------------------------------------
-;Subroutine Name: LCDDELAY1
+;Function Name: LCDDELAY1
 ;Author: C2C Payden McBee, USAF
 ;Function: Implements a 40.5 microsecond delay
 ;Inputs:delay1, a constant number to iterate the loop
 ;Outputs: none
 ;Registers destroyed: none
-;Subroutines used:none
+;Functions used:none
 ;---------------------------------------------------*/
 void LCDDELAY1(){
 
-                  ; your 40.5 microsecond delay
-                  push r5
-                  mov.w #delay1, r5	//nine is used to make the delay iterate 27 times
-                  nop
-delay			  dec r5
-				  jnz delay
-				  pop r5
+                  //your 40.5 microsecond delay  //43 cycles
+                  _delay_cycles(43);
 }
 
 
 /*;---------------------------------------------------
-;Subroutine Name: LCDDELAY1
+;Function Name: LCDDELAY1
 ;Author: C2C Payden McBee, USAF
 ;Function: Implements a 1.65 millisecond delay
 ;Inputs:delay1, a constant number to iterate the loop
 ;Outputs: none
 ;Registers destroyed: none
-;Subroutines used:none
+;Functions used:none
 ;---------------------------------------------------*/
 void LCDDELAY2(){
 
-                 // your 1.65 millisecond delay code goes here
- 				  push r5
-                  mov.w #delay2, r5	;hex 23F is used to make the delay iterate 575 decimal times
-                  nop
-delay2			  dec r5
-				  jnz delay
-				  pop r5
+                 // your 1.65 millisecond delay code goes here  //1741 cycles
+				_delay_cycles(1741);
 }
 
 /*---------------------------------------------------
-; Subroutine Name: LCDCLR
+; Function Name: LCDCLR
 ; Author: Capt Todd Branchflower, USAF
 ; Function: Clears LCD, sets cursor to home
 ; Inputs: none
 ; Outputs: none
 ; Registers destroyed: none
-; Subroutines used: LCDWRT8, LCDDELAY1, LCDDELAY2
+; Functions used: LCDWRT8, LCDDELAY1, LCDDELAY2
 ;---------------------------------------------------*/
 void LCDCLR(){
-                  mov.b   #0, &LCDCON                                            // clear RS
-                  mov.b   #1, &LCDSEND                                           // send clear
-                  call    #LCDWRT8
-                  call    #LCDDELAY1
-                  mov.b   #0x40, &LCDCON                                         // set RS
-                  call    #LCDDELAY2
+		writeCommandByte(1);
 }
 
 /*---------------------------------------------------
-; Subroutine Name: LCDWRT8
+; Function Name: LCDWRT8
 ; Author: C2C Payden McBee
 ; Function: Send full byte to LCD
 ; Inputs: LCDSEND
 ; Outputs: none
 ; Registers destroyed: none
-; Subroutines used: LCDWRT4
+; Functions used: LCDWRT4
 ; Documentation: The code was created by
 ;  Capt Branchflower in assembly, I converted it to C.
 ;---------------------------------------------------*/
-void LCDWRT8(){
-                  push.w  r5
+void LCDWRT8(char byteToSend)
+{
+    	unsigned char sendByte = byteToSend;
 
-                  mov.b   &LCDSEND, r5                                          // load full byte
-                  and.b   #0xf0, r5                                             // shift in four zeros on the left
-                  rrc.b   r5
-                  rrc.b   r5
-                  rrc.b   r5
-                  rrc.b   r5
-                  mov.b   r5, &LCDDATA                                          // store send data
-                  call    #LCDWRT4                                              // write upper nibble
-                  mov.b   &LCDSEND, r5                                          // load full byte
-                  and.b   #0x0f, r5                                             // clear upper nibble
-                  mov.b   r5, &LCDDATA
-                  call    #LCDWRT4                                              //write lower nibble
+    	sendByte &= 0xF0;
 
-                  pop.w   r5
+    	sendByte = sendByte >> 4;               // rotate to the right 4 times
 
+    	LCDWRT4(sendByte);
+
+    	sendByte = byteToSend;
+
+    	sendByte &= 0x0F;
+
+    	LCDWRT4(sendByte);
 }
+
 /*---------------------------------------------------
-; Subroutine Name: LCDWRT4
+; Function Name: LCDWRT4
 ; Author: C2C Payden McBee
 ; Function: Send 4 bits of data to LCD via SPI.
 ; sets upper four bits to match LCDCON.
 ; Inputs: LCDCON, LCDDATA
 ; Outputs: none
 ; Registers destroyed: none
-; Subroutines used: LCDDELAY1
+; Functions used: LCDDELAY1
 ; Documentation: The code was created by
 ;  Capt Branchflower in assembly, I converted it to C.
 ;---------------------------------------------------*/
@@ -229,27 +211,27 @@ void LCDWRT4(){
 }
 
 /*---------------------------------------------------
-; Subroutine Name: SPISEND
-; Author: C2C Payden McBee
+; Function Name: SPISEND
+; Author: Capt Branchflower, USAF
 ; Function: Sends contents of r5 to SPI.
 ; Waits for Rx flag, clears by reading.
 ; Sets slave select accordingly.
 ; Outputs: none
 ; Registers destroyed: none
-; Subroutines used: LCDWRT8, LCDDELAY1, LCDDELAY2
-; Documentation: The code was created by
-;  Capt Branchflower in assembly, I converted it to C.
+; Functions used: LCDWRT8, LCDDELAY1, LCDDELAY2
 ;---------------------------------------------------*/
 
-void SPISEND(char holdLCDDATA){
+void SPISEND(char byteToSend){
 
-                  SET_SS_LO();
-                  UCB0TXBUF&=0x00; //if this variable is only a byte long, it will clear the whole byte, if it is a word long, it will only clear the lower byte
-                  UCB0TXBUF+=holdLCDDATA;         //transfer byte
+	              volatile char readByte;
+				  SET_SS_LO();
+                  UCB0TXBUF=byteToSend;         //transfer byte
 
-                  while (UCB0RXIFG==IFG2) {			 //wait for transfer completion
-                     holdLCDDATA=holdLCDDATA; //do nothing
-                  }
+                  while(!(UCB0RXIFG & IFG2))
+                     {
+                         // wait until you've received a byte
+                     }
+                  readByte = UCB0RXBUF;
                   SET_SS_HI();
 
                   }
@@ -283,13 +265,22 @@ void scrollString(char * string1, char * string2){
 // I don't expose these in my header, but may be helpful to you.
 
 void writeDataByte(char dataByte){
+	    LCDCON |= RS_MASK;
+	    LCDWRT8(dataByte);
+	    LCDDELAY2();
+}
+void writeCommandNibble(char commandNibble)
+{
+		LCDCON&= ~RC_MASK;
+		LCDWRT4(commandNibble);
+		LCDDELAY2();
 
 }
-void writeCommandNibble(char commandNibble){
-
-}
-void writeCommandByte(char commandByte){
-
+void writeCommandByte(char commandByte)
+{
+	    LCDCON &= ~RS_MASK;
+	    LCDWRT8(commandByte);
+	    LCDDELAY2();
 }
 
 

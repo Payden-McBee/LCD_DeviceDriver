@@ -11,6 +11,7 @@
 #define LCD_H_
 
 //void runAt1Hz(); do this for A functionality
+#define RS_MASK 0x40
 
 void INITSPI();
 void LCDINIT();
