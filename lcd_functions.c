@@ -242,15 +242,15 @@ void LCDWRT4(){
 ;---------------------------------------------------*/
 
 void SPISEND(int holdLCDDATA){
-                  push    r4			//r5 corresponds to holdLCDDATA
+
                   SET_SS_LO();
-                  mov.b   r5, &UCB0TXBUF                                         //transfer byte
-wait:
-                  bit.b   #UCB0RXIFG, &IFG2                                      //wait for transfer completion
-                  jz      wait
-                  //mov.b   &UCB0RXBUF, r4                                         //read value to clear flag
-                  call    #SET_SS_HI
-                  pop     r4
+                  UCB0TXBUF=holdLCDDATA;       //I'm assuming that this variable is only 2 bytes long   //transfer byte
+
+                  while (UCB0RXIFG==IFG2) {			 //wait for transfer completion
+                     holdLCDDATA=holdLCDDATA; //do nothing
+                  }
+                  SET_SS_HI();
+
                   }
 
 // void INITBUTTONS();
