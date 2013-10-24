@@ -16,7 +16,7 @@ void main(void) {
     INITSPI();
     LCDINIT();
     LCDCLR();
-    //writeString(firstMessage);
+  //  writeString(firstMessage);
     scrollString(firstMessage,firstMessage);
     while(1) {} //trap CPU
 }

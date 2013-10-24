@@ -277,7 +277,6 @@ void writeString(char * string){
     {
        letter=*string;
        writeChar(letter);
-       longdelay();
        string++;
        writeString(string);
     }
@@ -285,14 +284,12 @@ void writeString(char * string){
 }
 
 void scrollString(char * string1, char * string2){
-	int i;
-    for(i=0;i<20;i++)
-    {
-    	writeString(string1);
-    	string1++;
-    }
-    string1-=20;
-    scrollString(string1,string1);
+	writeString(string1);
+	longdelay();
+	//string1++;
+	LCDCLR();
+	longdelay();
+	writeString(string1);
 }
 void longdelay(){
 	int j;
