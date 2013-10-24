@@ -286,14 +286,14 @@ void writeString(char * string){
 void scrollString(char * string1, char * string2){
 	writeString(string1);
 	longdelay();
-	//string1++;
 	LCDCLR();
 	longdelay();
-	writeString(string1);
+	string1++;
+	scrollString(string1,string1);
 }
 void longdelay(){
 	int j;
-	for(j=0;j<200;j++)
+	for(j=0;j<150;j++)
 	{
 		LCDDELAY2();
 	}
