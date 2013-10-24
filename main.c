@@ -15,5 +15,5 @@ void main(void) {
     INITSPI();
     LCDINIT();
     LCDCLR();
-
+    while(1) {} //trap CPU
 }

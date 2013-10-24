@@ -12,10 +12,20 @@
 
 //void runAt1Hz(); do this for A functionality
 #define RS_MASK 0x40
+#define E 0x80
+
+unsigned char LCDCON;
 
 void INITSPI();
 void LCDINIT();
 void LCDCLR();
+void SPISEND(char byteToSend);
+void SET_SS_HI();
+void SET_SS_LO();
+void LCDDELAY1();
+void LCDDELAY2();
+void LCDWRT8(char byteToSend);
+void LCDWRT4(char LCDDATA);
 
 // void INITBUTTONS();
 //void determineMsg();

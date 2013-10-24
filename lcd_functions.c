@@ -4,6 +4,7 @@
  *  Created on: Oct 21, 2013
  *      Author: C15Payden.McBee
  */
+#include <msp430.h>
 #include "lcd.h"
 
 void INITSPI(){
@@ -48,8 +49,6 @@ void INITSPI(){
 ;---------------------------------------------------*/
 void LCDINIT(){
 	  	  	  	  	  SET_SS_HI();
-
-	                  LCDCON=0;                                        // initialize control bits
 
 	                  writeCommandNibble(0x03);	 // function set
 
@@ -192,20 +191,20 @@ void LCDWRT8(char byteToSend)
 ; Documentation: The code was created by
 ;  Capt Branchflower in assembly, I converted it to C.
 ;---------------------------------------------------*/
-void LCDWRT4(){
+void LCDWRT4(char LCDDATA){
 
-                  char holdLCDDATA;
-                  holdLCDDATA=LCDDATA;					 //load data to send
-                  holdLCDDATA&=0x0f;                     //ensure upper half of byte is clear
-                  holdLCDDATA|=LCDCON;                   //set LCD control nibble
-                  holdLCDDATA&=0x7f;        			 //set E low
-                  SPISEND(holdLCDDATA);
+                  unsigned char sendByte;
+                  sendByte=LCDDATA;		    //load data to send
+                  sendByte&=0x0f;			//ensure upper half of byte is clear
+                  sendByte|=LCDCON;         //set LCD control nibble
+				  sendByte&=0x7f;       //set E low
+                  SPISEND(sendByte);
                   LCDDELAY1();
-                  holdLCDDATA|=0x80;	                 //set E high
-                  SPISEND(holdLCDDATA);
+                  sendByte|=E;	                 //set E high
+                  SPISEND(sendByte);
                   LCDDELAY1();
-                  holdLCDDATA&=0x7f;                     //set E low
-                  SPISEND(holdLCDDATA);
+                  sendByte&=0x7f;                     //set E low
+                  SPISEND(sendByte);
                   LCDDELAY1();
 
 }
@@ -271,7 +270,7 @@ void writeDataByte(char dataByte){
 }
 void writeCommandNibble(char commandNibble)
 {
-		LCDCON&= ~RC_MASK;
+		LCDCON&= ~RS_MASK;
 		LCDWRT4(commandNibble);
 		LCDDELAY2();
 
