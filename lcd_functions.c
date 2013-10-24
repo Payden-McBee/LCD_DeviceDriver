@@ -212,7 +212,7 @@ void LCDWRT8(){
 ;---------------------------------------------------*/
 void LCDWRT4(){
 
-                  int holdLCDDATA;
+                  char holdLCDDATA;
                   holdLCDDATA=LCDDATA;					 //load data to send
                   holdLCDDATA&=0x0f;                     //ensure upper half of byte is clear
                   holdLCDDATA|=LCDCON;                   //set LCD control nibble
@@ -241,10 +241,11 @@ void LCDWRT4(){
 ;  Capt Branchflower in assembly, I converted it to C.
 ;---------------------------------------------------*/
 
-void SPISEND(int holdLCDDATA){
+void SPISEND(char holdLCDDATA){
 
                   SET_SS_LO();
-                  UCB0TXBUF=holdLCDDATA;       //I'm assuming that this variable is only 2 bytes long   //transfer byte
+                  UCB0TXBUF&=0x00; //if this variable is only a byte long, it will clear the whole byte, if it is a word long, it will only clear the lower byte
+                  UCB0TXBUF+=holdLCDDATA;         //transfer byte
 
                   while (UCB0RXIFG==IFG2) {			 //wait for transfer completion
                      holdLCDDATA=holdLCDDATA; //do nothing
