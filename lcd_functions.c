@@ -217,14 +217,14 @@ void LCDWRT4(){
                   holdLCDDATA&=0x0f;                     //ensure upper half of byte is clear
                   holdLCDDATA|=LCDCON;                   //set LCD control nibble
                   holdLCDDATA&=0x7f;        			 //set E low
-                  SPISEND
-                  call    #LCDDELAY1
-                  bis.b   #0x80, r5                                             //set E high
-                  call    #SPISEND
-                  call    #LCDDELAY1
-                  and.b   #0x7f, r5                                              //set E low
-                  call    #SPISEND
-                  call    #LCDDELAY1
+                  SPISEND(holdLCDDATA);
+                  LCDDELAY1();
+                  holdLCDDATA|=0x80;	                 //set E high
+                  SPISEND(holdLCDDATA);
+                  LCDDELAY1();
+                  holdLCDDATA&=0x7f;                     //set E low
+                  SPISEND(holdLCDDATA);
+                  LCDDELAY1();
 
 }
 
@@ -241,14 +241,14 @@ void LCDWRT4(){
 ;  Capt Branchflower in assembly, I converted it to C.
 ;---------------------------------------------------*/
 
-void SPISEND(){
-                  push    r4
-                  call    #SET_SS_LO
+void SPISEND(int holdLCDDATA){
+                  push    r4			//r5 corresponds to holdLCDDATA
+                  SET_SS_LO();
                   mov.b   r5, &UCB0TXBUF                                         //transfer byte
 wait:
                   bit.b   #UCB0RXIFG, &IFG2                                      //wait for transfer completion
                   jz      wait
-                  mov.b   &UCB0RXBUF, r4                                         //read value to clear flag
+                  //mov.b   &UCB0RXBUF, r4                                         //read value to clear flag
                   call    #SET_SS_HI
                   pop     r4
                   }
