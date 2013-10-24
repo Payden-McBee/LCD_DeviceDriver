@@ -13,8 +13,10 @@
 //void runAt1Hz(); do this for A functionality
 #define RS_MASK 0x40
 #define E 0x80
-
-
+#define GIVE_COMMAND 0x0 //set Rs to 0 to give a command to LCD
+#define SECOND_LINE 0xC0
+#define FIRST_SPACE_LCD 0x40
+#define NUM_SIGN 0x23
 
 void INITSPI();
 void LCDINIT();
@@ -26,6 +28,7 @@ void LCDDELAY1();
 void LCDDELAY2();
 void LCDWRT8(char byteToSend);
 void LCDWRT4(char LCDDATA);
+void longdelay();
 
 // void INITBUTTONS();
 //void determineMsg();

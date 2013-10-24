@@ -8,6 +8,7 @@
 #include "lcd.h"
 
 unsigned char LCDCON;
+unsigned char LCDSEND;
 
 void INITSPI(){
 	  //your SPI initialization code goes here
@@ -199,13 +200,13 @@ void LCDWRT4(char LCDDATA){
                   sendByte=LCDDATA;		    //load data to send
                   sendByte&=0x0f;			//ensure upper half of byte is clear
                   sendByte|=LCDCON;         //set LCD control nibble
-				  sendByte&=0x7f;       //set E low
+				  sendByte&=~E;       //set E low
                   SPISEND(sendByte);
                   LCDDELAY1();
                   sendByte|=E;	                 //set E high
                   SPISEND(sendByte);
                   LCDDELAY1();
-                  sendByte&=0x7f;                     //set E low
+                  sendByte&=~E;                     //set E low
                   SPISEND(sendByte);
                   LCDDELAY1();
 
@@ -243,25 +244,63 @@ void SPISEND(char byteToSend){
 //let's get required working first
 
 void cursorToLineTwo(){
+			     LCDCON=GIVE_COMMAND;   //set 0 to RS, give command
+	             LCDDELAY1();
+	             LCDSEND=SECOND_LINE;
+			     LCDWRT8(LCDSEND);
+			     LCDDELAY1();
+				 LCDCON=FIRST_SPACE_LCD;
+				 LCDDELAY1();
 
 }
 
 void cursorToLineOne(){
-
+	                 LCDCON=GIVE_COMMAND;   //set 0 to RS, give command
+		             LCDDELAY1();
+		             LCDSEND=0;
+				     LCDWRT8(LCDSEND);
+				     LCDDELAY1();
+					 LCDCON=FIRST_SPACE_LCD;
+					 LCDDELAY1();
 }
 
 void writeChar(char asciiChar){
-
+	//LCDSEND=asciiChar;
+	LCDCON |= RS_MASK;
+	LCDWRT8(asciiChar);
+    LCDDELAY1();
 }
 
 void writeString(char * string){
+	char letter;
+    if(*string!=NUM_SIGN)
+    {
+       letter=*string;
+       writeChar(letter);
+       longdelay();
+       string++;
+       writeString(string);
+    }
 
 }
 
 void scrollString(char * string1, char * string2){
-
+	int i;
+    for(i=0;i<20;i++)
+    {
+    	writeString(string1);
+    	string1++;
+    }
+    string1-=20;
+    scrollString(string1,string1);
 }
-
+void longdelay(){
+	int j;
+	for(j=0;j<200;j++)
+	{
+		LCDDELAY2();
+	}
+}
 // Here are some helper functions from my LCD.c
 // I don't expose these in my header, but may be helpful to you.
 

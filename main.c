@@ -10,10 +10,13 @@
 /*
  * main.c
  */
+ char * firstMessage="ECE382 is my favorite class!#";
 void main(void) {
     WDTCTL = WDTPW | WDTHOLD;	// Stop watchdog timer
     INITSPI();
     LCDINIT();
     LCDCLR();
+    //writeString(firstMessage);
+    scrollString(firstMessage,firstMessage);
     while(1) {} //trap CPU
 }
