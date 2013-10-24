@@ -14,7 +14,7 @@
 #define RS_MASK 0x40
 #define E 0x80
 
-unsigned char LCDCON;
+
 
 void INITSPI();
 void LCDINIT();

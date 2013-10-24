@@ -7,6 +7,8 @@
 #include <msp430.h>
 #include "lcd.h"
 
+unsigned char LCDCON;
+
 void INITSPI(){
 	  //your SPI initialization code goes here
 		// |= bis.s
