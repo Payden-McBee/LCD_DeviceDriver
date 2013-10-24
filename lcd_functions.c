@@ -257,7 +257,7 @@ void cursorToLineTwo(){
 void cursorToLineOne(){
 	                 LCDCON=GIVE_COMMAND;   //set 0 to RS, give command
 		             LCDDELAY1();
-		             LCDSEND=0;
+		             LCDSEND=0x40;///////////////////////changed
 				     LCDWRT8(LCDSEND);
 				     LCDDELAY1();
 					 LCDCON=FIRST_SPACE_LCD;
@@ -284,12 +284,15 @@ void writeString(char * string){
 }
 
 void scrollString(char * string1, char * string2){
+	cursorToLineOne();
 	writeString(string1);
+	cursorToLineTwo();
+	writeString(string2);
 	longdelay();
 	LCDCLR();
 	longdelay();
 	string1++;
-	scrollString(string1,string1);
+	scrollString(string1,string2);
 }
 void longdelay(){
 	int j;

@@ -11,12 +11,13 @@
  * main.c
  */
  char * firstMessage="ECE382 is my favorite class!#";
+ char * secondMessage="Required Funcitonality#";
 void main(void) {
     WDTCTL = WDTPW | WDTHOLD;	// Stop watchdog timer
     INITSPI();
     LCDINIT();
     LCDCLR();
   //  writeString(firstMessage);
-    scrollString(firstMessage,firstMessage);
+    scrollString(firstMessage,secondMessage);
     while(1) {} //trap CPU
 }
