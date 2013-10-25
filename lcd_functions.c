@@ -7,9 +7,18 @@
 #include <msp430.h>
 #include "lcd.h"
 
+
 unsigned char LCDCON;
 unsigned char LCDSEND;
 
+/*---------------------------------------------------
+;Function Name: INITSPI
+;Author: C2C Payden McBee, USAF
+;Function: initializes the SPI
+;Inputs:none
+;Outputs: none
+;Registers destroyed: none
+;---------------------------------------------------*/
 void INITSPI(){
 	  //your SPI initialization code goes here
 		// |= bis.s
@@ -37,7 +46,7 @@ void INITSPI(){
 
 	      				UCB0CTL1 &= ~UCSWRST;     //enable subsystem
 
-	      			    P1DIR|= BIT3;
+	      			    P1DIR|= BIT4;
 
 }
 
@@ -90,7 +99,7 @@ void SET_SS_HI(){
 
               //your set SS high code goes here
 
-				P1OUT|=BIT3;
+				P1OUT|=BIT4;
 
 }
 
@@ -105,7 +114,7 @@ void SET_SS_HI(){
 void SET_SS_LO(){
 
                   //your set SS low code goes here
-				P1OUT&=~BIT3;
+				P1OUT&=~BIT4;
 
 }
 
@@ -156,14 +165,12 @@ void LCDCLR(){
 
 /*---------------------------------------------------
 ; Function Name: LCDWRT8
-; Author: C2C Payden McBee
+; Author: Capt Todd Branchflower, USAF
 ; Function: Send full byte to LCD
 ; Inputs: LCDSEND
 ; Outputs: none
 ; Registers destroyed: none
 ; Functions used: LCDWRT4
-; Documentation: The code was created by
-;  Capt Branchflower in assembly, I converted it to C.
 ;---------------------------------------------------*/
 void LCDWRT8(char byteToSend)
 {
@@ -238,11 +245,14 @@ void SPISEND(char byteToSend){
 
                   }
 
-// void INITBUTTONS();
-//void determineMsg();
-//I'll implement this when I do B functionality
-//let's get required working first
-
+/*---------------------------------------------------
+; Function Name: cursorToLineTwo
+; Author: C2C Payden McBee, USAFA
+; Function:Sets the cursor on the LCD to line 2
+; Outputs: none
+; Registers destroyed: none
+; Functions used: LCDWRT8, LCDDELAY1
+;---------------------------------------------------*/
 void cursorToLineTwo(){
 			     LCDCON=GIVE_COMMAND;   //set 0 to RS, give command
 	             LCDDELAY1();
@@ -254,23 +264,45 @@ void cursorToLineTwo(){
 
 }
 
+/*---------------------------------------------------
+; Function Name: cursorToLineOne
+; Author: C2C Payden McBee, USAFA
+; Function:Sets the cursor on the LCD to line 1
+; Outputs: none
+; Registers destroyed: none
+; Functions used: LCDWRT8, LCDDELAY1
+;---------------------------------------------------*/
 void cursorToLineOne(){
 	                 LCDCON=GIVE_COMMAND;   //set 0 to RS, give command
 		             LCDDELAY1();
-		             LCDSEND=0x80;///////////////////////changed
+		             LCDSEND=0x80;
 				     LCDWRT8(LCDSEND);
 				     LCDDELAY1();
 					 LCDCON=FIRST_SPACE_LCD;
 					 LCDDELAY1();
 }
 
+/*---------------------------------------------------
+; Function Name: writeChar
+; Author: C2C Payden McBee, USAFA
+; Function:Writes a single character to the LCD
+; Outputs: none
+; Registers destroyed: none
+; Functions used: LCDWRT8, LCDDELAY1
+;---------------------------------------------------*/
 void writeChar(char asciiChar){
-	//LCDSEND=asciiChar;
 	LCDCON |= RS_MASK;
 	LCDWRT8(asciiChar);
     LCDDELAY1();
 }
-
+/*---------------------------------------------------
+; Function Name: writeString
+; Author: C2C Payden McBee, USAFA
+; Function:Writes a string to the LCD
+; Outputs: none
+; Registers destroyed: none
+; Functions used: writeChar
+;---------------------------------------------------*/
 void writeString(char string[]){
 	int i=0;
 	for (i = 0; i < 8; i++){
@@ -278,8 +310,17 @@ void writeString(char string[]){
 	}
 }
 
+/*---------------------------------------------------
+; Function Name: scrollString
+; Author: C2C Payden McBee, USAFA
+; Function:scrolls and wraps a string to a line of the LCD
+; Outputs: none
+; Registers destroyed: none
+; Functions used: cursorToLineOne, rotateString, writeString, cursorToLineTwo, longdelay, LCDCLR
+;---------------------------------------------------*/
 void scrollString(char string1[], char string2[]){
-	while (1){
+	while (1) //we want to scroll forever
+	{
 		cursorToLineOne();
 		rotateString(string1);
 		writeString(string1);
@@ -289,19 +330,21 @@ void scrollString(char string1[], char string2[]){
 		longdelay();
 		LCDCLR();
 	}
-
-	//scrollString(string1,string2);
 }
-void rotateString(char string[]){
+/*---------------------------------------------------
+; Function Name: rotateString
+; Author: C2C Payden McBee, USAFA
+; Function: shifts the array members to the left and puts the first member at the end of the array, rotating it left
+; Outputs: none
+; Registers destroyed: none
+; Functions used:findArrayLength
+;---------------------------------------------------*/
+void rotateString(char string[])
+{
 		int i=0;
-		int j=0;
-		//int arrayLength=28;
-		int arrayLength=0;
-		while(string[j]!=0)
-		{
-			arrayLength++;
-			j++;
-		}
+
+		int arrayLength=findArrayLength(string);
+
 		char firstVal=string[i];
 		for(i=0;i<arrayLength;i++)
 		{
@@ -309,24 +352,53 @@ void rotateString(char string[]){
 		}
 
 		string[arrayLength-1] = firstVal;
-		//now print string
-
 }
-void longdelay(){
+
+/*---------------------------------------------------
+; Function Name: findArrayLength
+; Author: C2C Payden McBee, USAFA
+; Function: finds the length of a given array
+; Outputs: length of array
+; Registers destroyed: none
+; Functions used: none
+;---------------------------------------------------*/
+int findArrayLength(char string[])
+{
+	int j=0;
+	int arrayLength=0;
+	while(string[j]!=0)
+			{
+				arrayLength++;
+				j++;
+			}
+	return arrayLength;
+}
+
+/*---------------------------------------------------
+; Function Name: longdelay
+; Author: C2C Payden McBee, USAFA
+; Function: determines the speed of the scrolling, delays for 1.5 times lcddelay2, I played with the number until I liked the speed of the scrolling
+; Outputs: none
+; Registers destroyed: none
+; Functions used: LCDDELAY2
+;---------------------------------------------------*/
+void longdelay()
+{
 	int j;
 	for(j=0;j<150;j++)
 	{
 		LCDDELAY2();
 	}
 }
-// Here are some helper functions from my LCD.c
-// I don't expose these in my header, but may be helpful to you.
 
-void writeDataByte(char dataByte){
-	    LCDCON |= RS_MASK;
-	    LCDWRT8(dataByte);
-	    LCDDELAY2();
-}
+/*---------------------------------------------------
+; Function Name: writeCommandNibble
+; Author: Capt Todd Branchflower, USAF
+; Function: Send command nibble to LCD, as opposed to a data nibble
+; Outputs: none
+; Registers destroyed: none
+; Functions used: LCDWRT4
+;---------------------------------------------------*/
 void writeCommandNibble(char commandNibble)
 {
 		LCDCON&= ~RS_MASK;
@@ -334,6 +406,14 @@ void writeCommandNibble(char commandNibble)
 		LCDDELAY2();
 
 }
+/*---------------------------------------------------
+; Function Name: writeCommandByte
+; Author: Capt Todd Branchflower, USAF
+; Function: Send full byte to LCD telling it a command is about to come, not data
+; Outputs: none
+; Registers destroyed: none
+; Functions used: LCDWRT4
+;---------------------------------------------------*/
 void writeCommandByte(char commandByte)
 {
 	    LCDCON &= ~RS_MASK;
